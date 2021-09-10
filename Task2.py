@@ -43,7 +43,7 @@ class handDetector():
     def findHands(self, img, draw=True):
         #Firstly remember to convert the given image in RBG to RGB
         imgcvt = cv2.cvtColor(cv2.flip(img, 1),cv2.COLOR_BGR2RGB)
-        show = imgcvt.copy() 
+        show = imgcvt.copy()
 
         # call hands.process and pass the converted image to it and store in self.results
         with mp_hands.Hands(min_detection_confidence=0.6,min_tracking_confidence=0.4) as hands:
@@ -81,13 +81,12 @@ class handDetector():
 
         if self.results.multi_hand_landmarks:
             for hand in self.results.multi_hand_landmarks:
-                for landmark in range(20):
-                    xList.append(hand.landmark[landmark].x * self.image_width)
-                    yList.append(hand.landmark[landmark].y * self.image_height)
-                    self.lmList.append([hand.landmark[landmark].z, 
-                    hand.landmark[landmark].x * self.image_width, hand.landmark[landmark].y * self.image_height])
-
-
+                for landmark in hand.landmark:
+                    xList.append(landmark.x * self.image_width)
+                    yList.append(landmark.y * self.image_height)
+                    self.lmList.append([landmark.z, 
+                    landmark.x * self.image_width, landmark.y * self.image_height])
+                    
             self.right = max(xList)
             self.left = min(xList)
             self.top = max(yList)
@@ -101,12 +100,11 @@ class handDetector():
 
         # Draw if the draw given is true
 
-            box = np.array(bbox)
-            isClosed = True
+            # box = np.array(bbox)
 
             # if draw:
             #     print(bbox)
-            #     # img = cv2.polylines(img, [box], isClosed, (255,255,0), 3)
+            #     img = cv2.polylines(img, [box], True, (255,255,0), 3)
             #     img = cv2.rectangle(img, bbox[2], bbox[4], (255,255,0), 3)
 
         return self.lmList, bbox
