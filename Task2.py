@@ -101,7 +101,7 @@ class handDetector():
         # Draw if the draw given is true
 
         if draw:
-            cv2.polylines(img, bbox, True,(0,255,0), 3);
+            cv2.polylines(img, bbox, True,(0,255,0), 3)
 
         return self.lmList, bbox
 # fingersUp function return list of 5 fingers and their respective state
@@ -111,6 +111,13 @@ class handDetector():
     def fingersUp(self):
         fingers = []
         
+        for hand in self.results.multi_hand_landmarks:
+            for fingerid in self.tipIds:
+                if hand.landmark[fingerid].y > hand.landmark[fingerid-3].y:
+                    fingers.append(1)
+                else:
+                    fingers.append(0)
+
 
         return fingers
 
