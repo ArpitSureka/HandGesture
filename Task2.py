@@ -79,29 +79,35 @@ class handDetector():
 
         self.image_height, self.image_width, _ = img.shape
 
-        for hand in self.results.multi_hand_landmarks:
-            for landmark in range(20):
-                xList.append(hand.landmark[landmark].x * self.image_width)
-                yList.append(hand.landmark[landmark].y * self.image_height)
-                self.lmList.append([hand.landmark[landmark].z, 
-                hand.landmark[landmark].x * self.image_width, hand.landmark[landmark].y * self.image_height])
+        if self.results.multi_hand_landmarks:
+            for hand in self.results.multi_hand_landmarks:
+                for landmark in range(20):
+                    xList.append(hand.landmark[landmark].x * self.image_width)
+                    yList.append(hand.landmark[landmark].y * self.image_height)
+                    self.lmList.append([hand.landmark[landmark].z, 
+                    hand.landmark[landmark].x * self.image_width, hand.landmark[landmark].y * self.image_height])
 
 
-        self.right = max(xList)
-        self.left = min(xList)
-        self.top = max(yList)
-        self.bottom = min(yList)
+            self.right = max(xList)
+            self.left = min(xList)
+            self.top = max(yList)
+            self.bottom = min(yList)
 
         
-        bbox.append([min(xList), max(yList)])
-        bbox.append([max(xList), max(yList)])
-        bbox.append([max(xList), min(yList)])
-        bbox.append([min(xList), min(yList)])
+            bbox.append([(min(xList), max(yList))])
+            bbox.append([(max(xList), max(yList))])
+            bbox.append([(max(xList), min(yList))])
+            bbox.append([(min(xList), min(yList))])
 
         # Draw if the draw given is true
 
-        if draw:
-            cv2.polylines(img, bbox, True,(0,255,0), 3)
+            box = np.array(bbox)
+            isClosed = True
+
+            # if draw:
+            #     print(bbox)
+            #     # img = cv2.polylines(img, [box], isClosed, (255,255,0), 3)
+            #     img = cv2.rectangle(img, bbox[2], bbox[4], (255,255,0), 3)
 
         return self.lmList, bbox
 # fingersUp function return list of 5 fingers and their respective state
@@ -133,6 +139,13 @@ class handDetector():
         length = 0
 
         # write your code here
+        length = math.dist([x1,y1],[x2,y2])
+
+        if draw:
+            img = cv2.line(img, (x1,y1), (x2,y2), (255,255,0), t)
+            img = cv2.circle(img, (x1,y1), r, (255,255,0),-1)
+            img = cv2.circle(img, (x2,y2), r, (255,255,0),-1)
+            img = cv2.circle(img, (cx,cy), r, (255,255,0),-1)
 
         return length, img, [x1, y1, x2, y2, cx, cy]
 #############################################################################################################
@@ -162,12 +175,13 @@ def main():
     # 0-For your first webcam in the PC
     cap = cv2.VideoCapture(0)
     detector = handDetector()
+    print("Press 'Q' to quit")
     while True:
         success, img = cap.read()
         img = detector.findHands(img)
-        lmList = detector.findPosition(img)
-        #if len(lmList) != 0:
-        #    print(lmList[3])
+        # lmList = detector.findPosition(img)
+        # if len(lmList) != 0:
+        #    print(lmList)
 
         cTime = time.time()
         fps = 1 / (cTime - pTime)
@@ -177,7 +191,11 @@ def main():
                     (0, 0, 0), 3)
 
         cv2.imshow("Image", img)
-        cv2.waitKey(10)
+        if cv2.waitKey(1) & 0xFF == ord('q'):
+            break
+
+    cap.release()
+    cv2.destroyAllWindows()
     
     # img = cv2.imread("./File path for image goes here"")
     # img = detector.findHands(img)
