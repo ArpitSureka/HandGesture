@@ -55,10 +55,8 @@ class handDetector():
             show.flags.writeable = True
             show = cv2.cvtColor(show, cv2.COLOR_RGB2BGR)
             if self.results.multi_hand_landmarks:
-                # print(self.results.multi_hand_landmarks)
                 for hand_landmarks in self.results.multi_hand_landmarks:
                     mp_drawing.draw_landmarks(show, hand_landmarks, mp_hands.HAND_CONNECTIONS)
-                    # print(hand_landmarks)
 
         img = show.copy()
         # Finally return the image
@@ -79,8 +77,31 @@ class handDetector():
         # Remember: mp gives you landmarks which are normalized to 0.0 and 1.0 which need to be converted into 
         # exact coordinates for use
 
+        self.image_height, self.image_width, _ = img.shape
+
+        for hand in self.results.multi_hand_landmarks:
+            for landmark in range(20):
+                xList.append(hand.landmark[landmark].x * self.image_width)
+                yList.append(hand.landmark[landmark].y * self.image_height)
+                self.lmList.append([hand.landmark[landmark].z, 
+                hand.landmark[landmark].x * self.image_width, hand.landmark[landmark].y * self.image_height])
+
+
+        self.right = max(xList)
+        self.left = min(xList)
+        self.top = max(yList)
+        self.bottom = min(yList)
+
+        
+        bbox.append([min(xList), max(yList)])
+        bbox.append([max(xList), max(yList)])
+        bbox.append([max(xList), min(yList)])
+        bbox.append([min(xList), min(yList)])
 
         # Draw if the draw given is true
+
+        if draw:
+            cv2.polylines(img, bbox, True,(0,255,0), 3);
 
         return self.lmList, bbox
 # fingersUp function return list of 5 fingers and their respective state
